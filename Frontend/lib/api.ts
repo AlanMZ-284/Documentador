@@ -35,8 +35,17 @@ function clearSessionAndRedirect() {
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (res.status === 401) {
+    let message = 'Credenciales inválidas o sesión expirada.'
+    try {
+      const body = await res.json()
+      if (body.message || body.error) {
+        message = body.message ?? body.error
+      }
+    } catch {
+      // body no es JSON
+    }
     clearSessionAndRedirect()
-    throw new Error('Sesión expirada. Inicia sesión de nuevo.')
+    throw new Error(message)
   }
   if (!res.ok) {
     let message = `Error ${res.status}`
