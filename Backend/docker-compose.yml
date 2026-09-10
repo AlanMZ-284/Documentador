@@ -1,0 +1,121 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: documentador-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: documentador
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: theluis
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d documentador"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  bootstrap:
+    image: node:20-alpine
+    container_name: documentador-bootstrap
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /app
+    env_file:
+      - .env
+    # DATABASE_URL apunta a la red interna de Docker (no al puerto del host).
+    # Sobrescribe el valor de .env intencionalmente.
+    environment:
+      DATABASE_URL: postgresql://postgres:theluis@postgres:5432/documentador
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json:ro
+      - bootstrap_modules:/app/node_modules
+    command: >
+      sh -c "
+        echo '--- Bootstrap: instalando dependencias en /tmp ---' &&
+        npm install --prefix /tmp/bootstrap-deps --no-save bcryptjs dotenv pg pino pino-pretty &&
+        echo '--- Bootstrap: ejecutando script ---' &&
+        NODE_PATH=/tmp/bootstrap-deps/node_modules node scripts/bootstrap-superadmin.js &&
+        echo '--- Bootstrap: COMPLETADO ---'
+      "
+    # on-failure:5 reintenta hasta 5 veces si falla (ej. DB todavía no lista).
+    # Una vez que termina con éxito (exit 0), Docker no lo vuelve a lanzar.
+    restart: on-failure:5
+
+  minio:
+    image: minio/minio:latest
+    container_name: documentador-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  minio-setup:
+    image: minio/mc:latest
+    container_name: documentador-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/documentador-docs &&
+      mc anonymous set download local/documentador-docs &&
+      echo 'Bucket creado correctamente'
+      "
+    restart: "no"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: documentador-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@develop.mx
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    profiles:
+      - tools
+
+  redis:
+    image: redis:7-alpine
+    container_name: documentador-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  minio_data:
+  redis_data:
+  # Volumen nombrado para los node_modules del bootstrap.
+  # Aislado del host para evitar conflictos de plataforma (Windows vs Alpine).
+  bootstrap_modules:

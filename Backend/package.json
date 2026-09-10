@@ -1,0 +1,51 @@
+{
+  "name": "documentador-api",
+  "version": "1.0.0",
+  "description": "Documentador API — Documentación automatizada de proyectos · Fastify + PostgreSQL + pgvector",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node src/shared/db/migrate.js",
+    "seed": "node src/shared/db/seed.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.28.0",
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/s3-request-presigner": "^3.600.0",
+    "@fastify/cors": "^9.0.1",
+    "@fastify/jwt": "^8.0.1",
+    "@fastify/multipart": "^8.3.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "adm-zip": "^0.5.16",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.34.0",
+    "diff": "^7.0.0",
+    "docxtemplater": "^3.68.7",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1",
+    "fastify-plugin": "^5.1.0",
+    "fast-xml-parser": "^4.5.0",
+    "ignore": "^7.0.0",
+    "ioredis": "^5.4.1",
+    "js-yaml": "^4.1.0",
+    "mammoth": "^1.12.0",
+    "node-sql-parser": "^5.3.10",
+    "openai": "^6.41.0",
+    "p-limit": "^6.1.0",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.12.0",
+    "pino-pretty": "^11.2.1",
+    "pizzip": "^3.2.0",
+    "puppeteer": "^25.1.0",
+    "smol-toml": "^1.3.1",
+    "unzipper": "^0.12.3",
+    "uuid": "^10.0.0",
+    "ws": "^8.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10"
+  }
+}

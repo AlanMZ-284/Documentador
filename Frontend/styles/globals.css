@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #6B1A2A;
+  --brand-dark: #4A0F1C;
+  --brand-darker: #2D0710;
+  --brand-accent: #8B2339;
+  --brand-light: #C4384F;
+  --brand-gold: #D4A843;
+  --sidebar-width: 260px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  color: #111827;
+  background: radial-gradient(circle at top left, rgba(212, 168, 67, 0.12), transparent 24%),
+    radial-gradient(circle at 80% 20%, rgba(107, 26, 42, 0.08), transparent 18%),
+    #f4f4f7;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.input-field {
+  @apply w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition duration-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-100;
+}
+
+.auth-card {
+  @apply bg-white/95 border border-gray-200/70 p-8 rounded-[32px] shadow-[0_28px_80px_-40px_rgba(0,0,0,0.24)] backdrop-blur-xl;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c8c8d0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a0a0b0; }
+
+/* Transitions */
+.transition-all { transition: all 0.2s ease; }
+
+/* Status pills */
+.pill {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+.pill-validated { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+.pill-processing { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+.pill-pending { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+.pill-urgent { @apply bg-red-50 text-red-700 border border-red-200; }
+.pill-legal { @apply bg-purple-50 text-purple-700 border border-purple-200; }
+.pill-tech { @apply bg-sky-50 text-sky-700 border border-sky-200; }
+.pill-fiscal { @apply bg-orange-50 text-orange-700 border border-orange-200; }
+.pill-tag { @apply bg-gray-100 text-gray-600 border border-gray-200; }
+
+/* Card styles */
+.doc-card {
+  @apply bg-white rounded-xl border border-gray-100 p-5 transition-all cursor-pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 8px rgba(0,0,0,0.03);
+}
+.doc-card:hover {
+  @apply border-gray-200;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  transform: translateY(-1px);
+}
+
+/* Sidebar active */
+.nav-item {
+  @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all;
+  color: rgba(255,255,255,0.65);
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.95);
+}
+.nav-item.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-left: 3px solid var(--brand-gold);
+}
+
+/* Upload zone */
+.upload-zone {
+  @apply border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer;
+  border-color: #d1d5db;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--brand-primary);
+  background: rgba(107, 26, 42, 0.03);
+}
+
+/* Metric cards */
+.metric-card {
+  @apply bg-white rounded-xl p-5 border border-gray-100;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* Smart folder cards */
+.folder-card {
+  @apply bg-white rounded-xl p-5 border border-gray-100 cursor-pointer transition-all;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.folder-card:hover {
+  @apply border-gray-200;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* Template cards */
+.template-card {
+  @apply bg-white rounded-xl border border-gray-100 p-6 flex flex-col gap-4 transition-all cursor-pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.template-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.09);
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-fade-in { animation: fadeIn 0.35s ease both; }
+.animate-slide-in { animation: slideIn 0.3s ease both; }
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }

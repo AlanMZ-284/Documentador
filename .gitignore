@@ -1,0 +1,17 @@
+# Next.js
+Frontend/.next/
+
+# Node
+Frontend/node_modules/
+
+# Logs
+*.log
+
+# Variables de entorno
+.env
+.env.local
+
+# Build
+dist/
+build/
+ZIP/

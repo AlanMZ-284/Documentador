@@ -1,0 +1,156 @@
+// === SISTEMA DE GESTIÓN DOCUMENTAL (PROYECTO SDMA 6) ===
+
+// --------------------------------------------------------
+// 1. CATÁLOGOS PRINCIPALES Y ÁREAS
+// --------------------------------------------------------
+
+Table catalogo_tipos_documento {
+  id_tipo_documento serial [primary key]
+  nombre_tipo varchar [not null, note: "Ej. Matriz RACI, Guía Operativa, Especificación"]
+  metodologia_asociada varchar [default: 'Ambas', note: "NUEVO: Restricción (Ej. Solo Scrum, Solo Cascada, Ambas)"]
+}
+
+Table catalogo_areas_corporativas {
+  id_area serial [primary key]
+  acronimo varchar [not null, note: "Ej. AGCTI, ACMII, ACDMA"]
+  nombre_area varchar
+}
+
+Table plantillas_mdap {
+  id_plantilla serial [primary key]
+  id_tipo_documento integer [note: "Vinculación con el catálogo MDAP"]
+  nombre_plantilla varchar
+  activa boolean [default: true]
+}
+
+// === NUEVAS TABLAS DE ACCESO AL SISTEMA ===
+
+Table roles {
+  id_rol serial [primary key]
+  nombre_rol varchar [not null, note: "Ej. Administrador, Legal, PMO, Consulta"]
+  permisos json [note: "Configuración de qué puede hacer este rol"]
+}
+
+Table usuarios {
+  id_usuario serial [primary key]
+  id_rol integer [ref: > roles.id_rol, note: "Relación 1:N - Un rol lo tienen muchos usuarios"]
+  id_recurso integer [ref: - recursos_humanos.id_recurso, note: "Relación 1:1 - Opcional: Liga la cuenta de login con el perfil del empleado"]
+  correo_corporativo varchar [not null, unique]
+  password_hash varchar [not null, note: "Contraseña encriptada (Nunca en texto plano)"]
+  activo boolean [default: true, note: "Si el empleado se va, se pone en falso, no se borra"]
+  fecha_ultimo_acceso timestamp
+}
+
+// --------------------------------------------------------
+// 2. ENTIDADES PRINCIPALES (OPERACIÓN)
+// --------------------------------------------------------
+
+Table aplicaciones {
+  id_aplicacion serial [primary key]
+  acronimo varchar [not null, note: "Siglas oficiales de la aplicación"]
+  descripcion_funcional text
+  tecnologia_lenguaje varchar [note: "Ej. Java, .Net, Python"]
+  manejador_base_datos varchar [note: "Ej. PostgreSQL, Oracle, SQL Server"]
+  criticidad_remedy varchar [note: "Nivel operativo: Alta, Media, Baja"]
+}
+
+Table proyectos_iniciativas {
+  id_proyecto serial [primary key, note: "Iniciativas TIC"]
+  nombre_proyecto varchar [not null]
+  tipo_esfuerzo varchar [note: "DS (Desarrollo) o DBI (Business Intelligence)"]
+  metodologia_trabajo varchar [note: "NUEVO: Marco de trabajo del proyecto (Ej. Cascada, Scrum, Híbrido)"]
+}
+
+Table recursos_humanos {
+  id_recurso serial [primary key]
+  id_area integer [note: "NUEVO: Vincula al empleado con su departamento corporativo"]
+  nombre_completo varchar [not null]
+  perfil_tipo varchar [note: "Arquitecto, Desarrollador, Analista de Pruebas (Nivel A, B, C)"]
+  cedula_profesional varchar [note: "Requisito académico obligatorio"]
+  certificaciones_vigentes text [note: "Lista de acreditaciones (PMP, ITIL, Scrum, etc.)"]
+}
+
+Table tickets {
+  id_ticket serial [primary key]
+  id_usuario integer [note: "NUEVO: Registra qué usuario levantó el reporte"]
+  descripcion text
+  estatus_actual varchar
+}
+
+// --------------------------------------------------------
+// 3. NÚCLEO DOCUMENTAL Y RELACIONES
+// --------------------------------------------------------
+
+Table documentos {
+  id_documento uuid [primary key]
+  id_tipo_documento integer
+  id_plantilla integer [note: "Regla N:1 - Impedir creación sin plantilla base"]
+  id_proyecto integer [note: "Regla 1:N - El proyecto que generó el documento"]
+  id_aplicacion integer [note: "Regla 1:N - Aplicación vinculada (Memoria Técnica, etc.)"]
+  titulo_documento varchar [not null, note: "Nombre oficial según nomenclatura SAT"]
+  version_actual integer [default: 1]
+  fecha_ultima_modificacion timestamp
+  estatus_aceptacion varchar [note: "En revisión, Aprobado, Rechazado"]
+  conteo_rechazos integer [default: 0, note: "Para aplicar deducciones si excede de 2"]
+  ruta_repositorio varchar [not null, note: "URL al SharePoint o GitLab institucional"]
+  firma_electronica json [note: "Metadatos para la validación mediante e.firma"]
+  ia_embedding vector [note: "Almacena la clasificación para búsqueda semántica con IA"]
+}
+
+Table historico_versiones {
+  id_version serial [primary key]
+  id_documento uuid
+  numero_version integer [not null]
+  ruta_repositorio varchar [not null]
+  fecha_modificacion timestamp [default: `now()`]
+}
+
+Table matriz_raci {
+  id_asignacion serial [primary key, note: "Relación M:N entre Usuarios y Documentos"]
+  id_documento uuid
+  id_recurso integer
+  rol_asignado varchar [note: "Responsable, Autoriza, Consultado, Informado"]
+}
+
+// --------------------------------------------------------
+// 4. HISTORIAL Y AUDITORÍA
+// --------------------------------------------------------
+
+Table audit_log {
+  id_evento serial [primary key]
+  id_usuario integer [note: "Referencia a quien realizó la acción"]
+  id_entidad_afectada varchar [note: "Referencia al UUID/ID modificado"]
+  tipo_accion varchar [note: "INSERT, UPDATE, DELETE, VIEW"]
+  timestamp_exacto timestamp [note: "Precisión de milisegundos"]
+}
+
+Table ticket_historial {
+  id_historial serial [primary key]
+  id_ticket integer
+  estatus_anterior varchar
+  estatus_nuevo varchar
+  entidad_responsable varchar [note: "SAT o Proveedor"]
+  fecha_cambio timestamp [default: `now()`]
+}
+
+// --------------------------------------------------------
+// DEFINICIÓN DE RELACIONES (FOREIGN KEYS)
+// --------------------------------------------------------
+
+// Relaciones Nuevas (Resolviendo las islas)
+Ref: recursos_humanos.id_area > catalogo_areas_corporativas.id_area
+Ref: tickets.id_usuario > usuarios.id_usuario
+
+// Relaciones Existentes
+Ref: plantillas_mdap.id_tipo_documento > catalogo_tipos_documento.id_tipo_documento
+Ref: documentos.id_tipo_documento > catalogo_tipos_documento.id_tipo_documento
+Ref: documentos.id_plantilla > plantillas_mdap.id_plantilla
+Ref: documentos.id_proyecto > proyectos_iniciativas.id_proyecto
+Ref: documentos.id_aplicacion > aplicaciones.id_aplicacion
+
+Ref: historico_versiones.id_documento > documentos.id_documento
+Ref: matriz_raci.id_documento > documentos.id_documento
+Ref: matriz_raci.id_recurso > recursos_humanos.id_recurso
+
+Ref: audit_log.id_usuario > usuarios.id_usuario
+Ref: ticket_historial.id_ticket > tickets.id_ticket
