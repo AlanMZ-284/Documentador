@@ -4,7 +4,7 @@ import { Zap, Shield, Sparkles, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 const features: { icon: any; text: string }[] = [
-  { icon: Zap, text: 'Automatiza la gestión documental con inteligencia' },
+  { icon: Zap, text: 'Automatiza la gestión documental con inteligencia artificial' },
   { icon: Shield, text: 'Protege accesos y firmas digitales' },
   { icon: Sparkles, text: 'Flujo claro y experiencia agradable' },
   { icon: Clock, text: 'Operación rápida y siempre disponible' },
