@@ -15,8 +15,19 @@ export const usuariosService = {
   // GET /api/usuarios
   listarTodos: async (): Promise<Usuario[]> => {
     const response = await usuariosApi.list();
-    // Si es paginado extrae .items, si no, lo fuerza como arreglo de Usuarios
-    return (response as any).items || (response as unknown as Usuario[]);
+    const rawList: any[] = Array.isArray(response)
+      ? response
+      : (response as any)?.data || (response as any)?.items || [];
+
+    return rawList.map((u: any) => ({
+      id: String(u.id_usuario ?? u.id ?? ''),
+      nombre: u.nombre_completo || u.nombre || (u.correo_corporativo ? u.correo_corporativo.split('@')[0] : 'Usuario'),
+      email: u.correo_corporativo || u.email || '',
+      puesto: u.puesto || u.nombre_rol || 'Personal Técnico',
+      rol: u.nombre_rol || u.rol || 'USER',
+      activo: Boolean(u.activo),
+      createdAt: u.fecha_creacion || u.createdAt,
+    }));
   },
 
   // POST /api/usuarios - nuevo usuario
