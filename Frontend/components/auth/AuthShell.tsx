@@ -128,7 +128,7 @@ export default function AuthShell({
           </div>
 
           <div className="mt-8 rounded-3xl border border-gray-100 bg-gray-50/80 p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 mb-3">Qué obtienes</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 mb-3">¿Qué obtienes?</div>
             <div className="space-y-3">
               {features.map(({ icon: Icon, text }, index) => (
                 <div key={index} className="flex items-start gap-3">
